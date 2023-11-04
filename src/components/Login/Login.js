@@ -24,13 +24,13 @@ const passwordReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
     return {
       value: action.val,
-      isValid: action.val.trim().length > 6,
+      isValid: action.val.trim().length > 5,
     };
   }
   if (action.type === "INPUT_BLUR") {
     return {
       value: state.value,
-      isValid: state.value.trim().length > 6,
+      isValid: state.value.trim().length > 5,
     };
   }
   return {
@@ -52,10 +52,21 @@ export default function Login(props) {
     isValid: "",
   });
 
+  const { isValid: emialIsValid } = emailState;
+  const { isValid: passwordIsValid } = passwordState;
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      setFormIsValid(emialIsValid && passwordIsValid);
+    }, 500);
+
+    return () => {
+      clearTimeout(identifier);
+    };
+  }, [emialIsValid, passwordIsValid]);
+
   const emailChangeHandler = (e) => {
     dispatchEmail({ type: "USER_INPUT", val: e.target.value });
-
-    setFormIsValid(emailState.isValid && passwordState.isValid);
   };
 
   const validateEmailHandler = () => {
@@ -68,8 +79,6 @@ export default function Login(props) {
 
   const passwordChangeHandler = (e) => {
     dispatchPassword({ type: "USER_INPUT", val: e.target.value });
-
-    setFormIsValid(emailState.isValid && passwordState.isValid);
   };
 
   const submitHandler = (e) => {
@@ -83,13 +92,13 @@ export default function Login(props) {
       onSubmit={submitHandler}
     >
       <div className="mb-4">
-        <label className="inline-block w-24mr-4 font-bold" for="mail">
+        <label className="inline-block w-24mr-4 font-bold" htmlFor="mail">
           E-Mail
         </label>
         <input
           className={`${
             emailState.isValid === false ? "border-red-600" : ""
-          } inline-block w-full mt-2 p-1 border-2 rounded-xl`}
+          } inline-block w-full mt-2 p-1 border-2 rounded-xl outline-none`}
           type="text"
           id="mail"
           value={emailState.value}
@@ -98,13 +107,13 @@ export default function Login(props) {
         />
       </div>
       <div>
-        <label className="inline-block w-24 mr-4 font-bold" for="password">
+        <label className="inline-block w-24 mr-4 font-bold" htmlFor="password">
           Password
         </label>
         <input
           className={`${
             passwordState.isValid === false ? "border-red-600" : ""
-          } inline-block w-full mt-2 p-1 border-2 rounded-xl`}
+          } inline-block w-full mt-2 p-1 border-2 rounded-xl outline-none`}
           type="password"
           id="password"
           value={passwordState.value}
