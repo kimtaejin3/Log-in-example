@@ -1,21 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
+
+const emailReducer = (state, action) => {
+  if (action.type === "USER_INPUT") {
+    return {
+      value: action.val,
+      isValid: action.val.includes("@"),
+    };
+  }
+  if (action.type === "INPUT_BLUR") {
+    return {
+      value: state.value,
+      isValid: state.value.includes("@"),
+    };
+  }
+
+  return {
+    value: "",
+    isValid: false,
+  };
+};
 
 export default function Login(props) {
-  const [enteredEmail, setEnteredEmail] = useState("");
-  const [emialIsValid, setEmailIsValid] = useState();
   const [enteredPassword, setEnteredPassword] = useState("");
   const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
+    value: "",
+    isValid: "",
+  });
+
   const emailChangeHandler = (e) => {
-    setEnteredEmail(e.target.value);
+    dispatchEmail({ type: "USER_INPUT", val: e.target.value });
+
     setFormIsValid(
       e.target.value.includes("@") && enteredPassword.trim().length > 6
     );
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes("@"));
+    dispatchEmail({ type: "INPUT_BLUR" });
   };
 
   const validatePasswordHandler = () => {
@@ -25,14 +49,12 @@ export default function Login(props) {
   const passwordChangeHandler = (event) => {
     setEnteredPassword(event.target.value);
 
-    setFormIsValid(
-      enteredEmail.includes("@") && event.target.value.trim().length > 6
-    );
+    setFormIsValid(emailState.isValid && event.target.value.trim().length > 6);
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, enteredPassword);
   };
 
   return (
@@ -46,11 +68,11 @@ export default function Login(props) {
         </label>
         <input
           className={`${
-            emialIsValid === false ? "border-red-600" : ""
+            emailState.isValid === false ? "border-red-600" : ""
           } inline-block w-full mt-2 p-1 border-2 rounded-xl`}
           type="text"
           id="mail"
-          value={enteredEmail}
+          value={emailState.value}
           onChange={emailChangeHandler}
           onBlur={validateEmailHandler}
         />
