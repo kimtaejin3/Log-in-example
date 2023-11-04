@@ -20,9 +20,26 @@ const emailReducer = (state, action) => {
   };
 };
 
+const passwordReducer = (state, action) => {
+  if (action.type === "USER_INPUT") {
+    return {
+      value: action.val,
+      isValid: action.val.trim().length > 6,
+    };
+  }
+  if (action.type === "INPUT_BLUR") {
+    return {
+      value: state.value,
+      isValid: state.value.trim().length > 6,
+    };
+  }
+  return {
+    value: "",
+    isValid: false,
+  };
+};
+
 export default function Login(props) {
-  const [enteredPassword, setEnteredPassword] = useState("");
-  const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
@@ -30,12 +47,15 @@ export default function Login(props) {
     isValid: "",
   });
 
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
+    value: "",
+    isValid: "",
+  });
+
   const emailChangeHandler = (e) => {
     dispatchEmail({ type: "USER_INPUT", val: e.target.value });
 
-    setFormIsValid(
-      e.target.value.includes("@") && enteredPassword.trim().length > 6
-    );
+    setFormIsValid(emailState.isValid && passwordState.isValid);
   };
 
   const validateEmailHandler = () => {
@@ -43,18 +63,18 @@ export default function Login(props) {
   };
 
   const validatePasswordHandler = () => {
-    setPasswordIsValid(enteredPassword.trim().length > 6);
+    dispatchPassword({ type: "INPUT_BLUR" });
   };
 
-  const passwordChangeHandler = (event) => {
-    setEnteredPassword(event.target.value);
+  const passwordChangeHandler = (e) => {
+    dispatchPassword({ type: "USER_INPUT", val: e.target.value });
 
-    setFormIsValid(emailState.isValid && event.target.value.trim().length > 6);
+    setFormIsValid(emailState.isValid && passwordState.isValid);
   };
 
-  const submitHandler = (event) => {
-    event.preventDefault();
-    props.onLogin(emailState.value, enteredPassword);
+  const submitHandler = (e) => {
+    e.preventDefault();
+    props.onLogin(emailState.value, passwordState.value);
   };
 
   return (
@@ -83,11 +103,11 @@ export default function Login(props) {
         </label>
         <input
           className={`${
-            passwordIsValid === false ? "border-red-600" : ""
+            passwordState.isValid === false ? "border-red-600" : ""
           } inline-block w-full mt-2 p-1 border-2 rounded-xl`}
           type="password"
           id="password"
-          value={enteredPassword}
+          value={passwordState.value}
           onChange={passwordChangeHandler}
           onBlur={validatePasswordHandler}
         />
