@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useContext } from "react";
+import { AuthContext } from "../../context/auth-context";
 
 const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
@@ -52,6 +53,8 @@ export default function Login(props) {
     isValid: "",
   });
 
+  const authCtx = useContext(AuthContext);
+
   const { isValid: emialIsValid } = emailState;
   const { isValid: passwordIsValid } = passwordState;
 
@@ -83,7 +86,7 @@ export default function Login(props) {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    props.onLogin(emailState.value, passwordState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
